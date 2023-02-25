@@ -6,33 +6,6 @@
     android:orientation="vertical">
     <include layout="@layout/app_bar"/>
     <androidx.cardview.widget.CardView
-        android:id="@+id/schemes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_margin="8dp"
-        android:background="@drawable/card_bg"
-        style="@style/HomeScreenOptionCardViewStyle">
-
-        <!-- Second card view content -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Government Schemes"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_horizontal"
-            android:textSize="24sp"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            app:drawableTopCompat="@drawable/ic_location_analysis" />
-
-    </androidx.cardview.widget.CardView>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    </LinearLayout>
-    <androidx.cardview.widget.CardView
         android:id="@+id/ia"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -78,6 +51,29 @@
             app:drawableTopCompat="@drawable/ic_location_analysis" />
 
     </androidx.cardview.widget.CardView>
+    <androidx.cardview.widget.CardView
+        android:id="@+id/schemes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_margin="8dp"
+        android:background="@drawable/card_bg"
+        style="@style/HomeScreenOptionCardViewStyle">
+
+        <!-- Second card view content -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Government Schemes"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_horizontal"
+            android:textSize="24sp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:drawableTopCompat="@drawable/ic_government" />
+
+    </androidx.cardview.widget.CardView>
+
 
 
 </LinearLayout>

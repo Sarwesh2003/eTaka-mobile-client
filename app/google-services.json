@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "773899822689",
+    "project_id": "soilhealth-378117",
+    "storage_bucket": "soilhealth-378117.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:773899822689:android:23327f65599889d82eac20",
+        "android_client_info": {
+          "package_name": "com.example.etaka"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "773899822689-tsvmdav4kj88n1mjcbrl9e5aou26hjon.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.etaka",
+            "certificate_hash": "bfb486ec3a4cb85ac0d50820e9f8942a6ce88e45"
+          }
+        },
+        {
+          "client_id": "773899822689-u0324naropvuqjovu2imc0k4j9jfbfse.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5WHMrfOjkRif4h2G2EJubarWREvRVuBE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "773899822689-u0324naropvuqjovu2imc0k4j9jfbfse.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

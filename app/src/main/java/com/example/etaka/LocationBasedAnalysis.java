@@ -135,7 +135,7 @@ public class LocationBasedAnalysis extends AppCompatActivity implements OnMapRea
         double longitude = currentLocationMarker.getPosition().longitude;
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String URL = "http://192.168.135.148:5000/post?Lat=" + Double.toString(latitude) + "&Long=" + Double.toString(longitude) + "&date=2022-07-01&end_dt=2022-07-30";
+        String URL = " http://192.168.238.148:5000/post?Lat=" + Double.toString(latitude) + "&Long=" + Double.toString(longitude) + "&date=2022-07-01&end_dt=2022-07-30";
         //String URL = "https://soil-health.herokuapp.com/post?Lat=19.704656&Long=74.248489&date=2022-07-01&end_dt=2022-07-30";
         JSONObject jsonBody = new JSONObject();
         final String mRequestBody = jsonBody.toString();

@@ -36,7 +36,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.etaka.ml.SoilNet;
+//import com.example.etaka.ml.SoilNet;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 
 import org.json.JSONObject;
@@ -92,62 +92,62 @@ public class SelectImage extends AppCompatActivity {
         int permission1 = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA);
         return permission1 == PackageManager.PERMISSION_GRANTED ;
     }
-    public void classifyImage(Bitmap image){
-        try {
-            SoilNet model1 = SoilNet.newInstance(getApplicationContext());
-
-
-            // Creates inputs for reference.
-            TensorBuffer inputFeature01 = TensorBuffer.createFixedSize(new int[]{1, 244, 244, 3}, DataType.FLOAT32);
-            ByteBuffer byteBuffer1 = ByteBuffer.allocateDirect(4 * 244 * 244 * 3);
-            byteBuffer1.order(ByteOrder.nativeOrder());
-
-            int[] intValues1 = new int[244 * 244];
-            image.getPixels(intValues1, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
-            int pixel1 = 0;
-            //iterate over each pixel and extract R, G, and B values. Add those values individually to the byte buffer.
-            for(int i = 0; i < 244; i ++){
-                for(int j = 0; j < 244; j++){
-                    int val = intValues1[pixel1++]; // RGB
-                    byteBuffer1.putFloat(((val >> 16) & 0xFF) * (1.f / 1));
-                    byteBuffer1.putFloat(((val >> 8) & 0xFF) * (1.f / 1));
-                    byteBuffer1.putFloat((val & 0xFF) * (1.f / 1));
-                }
-            }
-
-            inputFeature01.loadBuffer(byteBuffer1);
-
-            // Runs model inference and gets result.
-            SoilNet.Outputs outputs1 = model1.process(inputFeature01);
-            TensorBuffer outputFeature01 = outputs1.getOutputFeature0AsTensorBuffer();
-
-            float[] confidences1 = outputFeature01.getFloatArray();
-            Toast.makeText(this, "Confidence "+ Arrays.toString(confidences1) , Toast.LENGTH_SHORT).show();
-            // find the index of the class with the biggest confidence.
-            int maxPos1 = 0;
-            float maxConfidence1 = 0;
-            Log.d("Confidionce", String.valueOf(confidences1.length));
-            for (int i = 0; i < confidences1.length; i++) {
-                Log.d("Confidionce", String.valueOf(Math.round(confidences1[i])));
-                if (confidences1[i] > maxConfidence1) {
-                    maxConfidence1 = confidences1[i];
-                    maxPos1 = i;
-                }
-            }
-            String[] res = new String[]{"0: Alluvial Soil:-{ Rice,Wheat,Sugarcane,Maize,Cotton,Soyabean,Jute }",
-                    "1: Black Soil:-{ Virginia, Wheat , Jowar,Millets,Linseed,Castor,Sunflower} ",
-                    "2: Clay Soil:-{ Rice,Lettuce,Chard,Broccoli,Cabbage,Snap Beans }",
-                    "3: Red Soil:{ Cotton,Wheat,Pilses,Millets,OilSeeds,Potatoes }"};
-            result.setText(res[maxPos1]);
-
-            // Releases model resources if no longer used.
-            model1.close();
-        } catch (IOException e) {
-            Log.d("Confidionce", e.getMessage());
-            // TODO Handle the exception
-        }
-
-    }
+//    public void classifyImage(Bitmap image){
+//        try {
+////            SoilNet model1 = SoilNet.newInstance(getApplicationContext());
+//
+//
+//            // Creates inputs for reference.
+//            TensorBuffer inputFeature01 = TensorBuffer.createFixedSize(new int[]{1, 244, 244, 3}, DataType.FLOAT32);
+//            ByteBuffer byteBuffer1 = ByteBuffer.allocateDirect(4 * 244 * 244 * 3);
+//            byteBuffer1.order(ByteOrder.nativeOrder());
+//
+//            int[] intValues1 = new int[244 * 244];
+//            image.getPixels(intValues1, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
+//            int pixel1 = 0;
+//            //iterate over each pixel and extract R, G, and B values. Add those values individually to the byte buffer.
+//            for(int i = 0; i < 244; i ++){
+//                for(int j = 0; j < 244; j++){
+//                    int val = intValues1[pixel1++]; // RGB
+//                    byteBuffer1.putFloat(((val >> 16) & 0xFF) * (1.f / 1));
+//                    byteBuffer1.putFloat(((val >> 8) & 0xFF) * (1.f / 1));
+//                    byteBuffer1.putFloat((val & 0xFF) * (1.f / 1));
+//                }
+//            }
+//
+//            inputFeature01.loadBuffer(byteBuffer1);
+//
+//            // Runs model inference and gets result.
+//            SoilNet.Outputs outputs1 = model1.process(inputFeature01);
+//            TensorBuffer outputFeature01 = outputs1.getOutputFeature0AsTensorBuffer();
+//
+//            float[] confidences1 = outputFeature01.getFloatArray();
+//            Toast.makeText(this, "Confidence "+ Arrays.toString(confidences1) , Toast.LENGTH_SHORT).show();
+//            // find the index of the class with the biggest confidence.
+//            int maxPos1 = 0;
+//            float maxConfidence1 = 0;
+//            Log.d("Confidionce", String.valueOf(confidences1.length));
+//            for (int i = 0; i < confidences1.length; i++) {
+//                Log.d("Confidionce", String.valueOf(Math.round(confidences1[i])));
+//                if (confidences1[i] > maxConfidence1) {
+//                    maxConfidence1 = confidences1[i];
+//                    maxPos1 = i;
+//                }
+//            }
+//            String[] res = new String[]{"0: Alluvial Soil:-{ Rice,Wheat,Sugarcane,Maize,Cotton,Soyabean,Jute }",
+//                    "1: Black Soil:-{ Virginia, Wheat , Jowar,Millets,Linseed,Castor,Sunflower} ",
+//                    "2: Clay Soil:-{ Rice,Lettuce,Chard,Broccoli,Cabbage,Snap Beans }",
+//                    "3: Red Soil:{ Cotton,Wheat,Pilses,Millets,OilSeeds,Potatoes }"};
+//            result.setText(res[maxPos1]);
+//
+//            // Releases model resources if no longer used.
+//            model1.close();
+//        } catch (IOException e) {
+//            Log.d("Confidionce", e.getMessage());
+//            // TODO Handle the exception
+//        }
+//
+//    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -161,7 +161,7 @@ public class SelectImage extends AppCompatActivity {
                 imageBitmap = ThumbnailUtils.extractThumbnail(imageBitmap,dimension,dimension);
 
                 imageBitmap = Bitmap.createScaledBitmap(imageBitmap,imageSize,imageSize,false);
-                classifyImage(imageBitmap);
+//                classifyImage(imageBitmap);
             }
             catch (Exception e)
             {

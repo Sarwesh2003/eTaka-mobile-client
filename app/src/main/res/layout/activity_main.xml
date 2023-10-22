@@ -1,79 +1,276 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-    <include layout="@layout/app_bar"/>
-    <androidx.cardview.widget.CardView
-        android:id="@+id/ia"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:layout_weight="1"
-        android:background="@drawable/card_bg"
-        style="@style/HomeScreenOptionCardViewStyle">
-
-
-        <TextView
+    android:background="@color/teal_700">
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/app_bar"/>
+        <GridLayout
+            android:id="@+id/weather"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Image Analysis"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_horizontal"
-            android:textSize="24sp"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            app:drawableTopCompat="@drawable/ic_image_analysis" />
+            android:layout_margin="8dp"
+            android:columnCount="2"
+            android:rowCount="2"
+            android:gravity="center"
+            android:layout_below="@+id/toolbar">
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:padding="8dp"
+                android:background="@drawable/bg_weather1">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:src="@drawable/ic_temperature"
+                    android:layout_marginEnd="4dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="27.6°\nTemperature"
+                    android:textColor="@color/white"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="4dp"
+                    android:textSize="20sp"/>
 
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:padding="8dp"
+                android:background="@drawable/bg_weather2">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="27.6°\nWind"
+                    android:layout_alignParentStart="true"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"/>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_wind"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:padding="8dp"
+                android:background="@drawable/bg_weather3">
+                <ImageView
+                    android:id="@+id/weather_des"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_sunny"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="27.6°\nDescription"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="4dp"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"/>
 
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/lba"
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:padding="8dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="27.6°\nHumidity"
+                    android:textColor="@color/white"
+                    android:drawablePadding="3dp"
+                    android:layout_alignParentStart="true"
+                    android:textSize="20sp"/>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_humidity"/>
+            </RelativeLayout>
+        </GridLayout>
+    <RelativeLayout
+        android:id="@+id/menu"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_margin="8dp"
-        android:background="@drawable/card_bg"
-        style="@style/HomeScreenOptionCardViewStyle">
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_card"
+        android:layout_marginTop="8dp"
+        android:layout_below="@+id/weather">
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:columnCount="2"
+                android:rowCount="2"
+                android:padding="16dp"
+                android:gravity="center">
 
-        <!-- Second card view content -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Location Based Analysis"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_horizontal"
-            android:textSize="24sp"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            app:drawableTopCompat="@drawable/ic_location_analysis" />
+                <!-- Option 1 -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/ia"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_gravity="fill"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardBackgroundColor="#FFC107">
 
-    </androidx.cardview.widget.CardView>
-    <androidx.cardview.widget.CardView
-        android:id="@+id/schemes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_margin="8dp"
-        android:background="@drawable/card_bg"
-        style="@style/HomeScreenOptionCardViewStyle">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center">
 
-        <!-- Second card view content -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Government Schemes"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_horizontal"
-            android:textSize="24sp"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            app:drawableTopCompat="@drawable/ic_government" />
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/ic_image_analysis"
+                            android:contentDescription="Option 1 Icon"
+                            android:layout_gravity="center" />
 
-    </androidx.cardview.widget.CardView>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Image Analysis"
+                            android:textAlignment="center"
+                            android:textSize="18sp"
+                            android:textColor="#000000"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
+                <!-- Option 2 -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/lba"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_gravity="fill"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardBackgroundColor="#03A9F4">
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center">
 
-</LinearLayout>
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/ic_location_analysis"
+                            android:contentDescription="Option 2 Icon"
+                            android:layout_gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Location Based Analysis"
+                            android:textSize="18sp"
+                            android:textAlignment="center"
+                            android:textColor="#000000"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Option 3 -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/schemes"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_gravity="fill"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardBackgroundColor="#4CAF50">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/ic_government"
+                            android:contentDescription="Option 3 Icon"
+                            android:layout_gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Government Schemes"
+                            android:textSize="18sp"
+                            android:textAlignment="center"
+                            android:textColor="#000000"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Option 4 -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_gravity="fill"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardBackgroundColor="#FF5722">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/ic_forums"
+                            android:contentDescription="Forums"
+                            android:layout_gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Forums"
+                            android:textAlignment="center"
+                            android:textSize="18sp"
+                            android:textColor="#000000"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </GridLayout>
+    </RelativeLayout>
+</RelativeLayout>

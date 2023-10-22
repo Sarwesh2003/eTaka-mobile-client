@@ -14,7 +14,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,15 +25,21 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.etaka.ml.SoilNet;
+import com.example.etaka.ml.SoilModelV2;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 
 import org.tensorflow.lite.DataType;
+import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     private CardView schemes;
     int imageSize = 224;
     private Uri imageUri;
+    private Interpreter interpreter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,15 +108,14 @@ public class MainActivity extends AppCompatActivity {
             imageUri = data.getData();
             try {
                 Bitmap imageBitmap = (Bitmap) MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                int dimension = imageBitmap.getHeight();
-                imageBitmap = ThumbnailUtils.extractThumbnail(imageBitmap,dimension,dimension);
 
-                imageBitmap = Bitmap.createScaledBitmap(imageBitmap,imageSize,imageSize,false);
+                imageBitmap = Bitmap.createScaledBitmap(imageBitmap,imageSize,imageSize,true);
                 classifyImage(imageBitmap);
             }
             catch (Exception e)
             {
-                Toast.makeText(this, "Error in retry", Toast.LENGTH_SHORT).show();
+                Log.d("ErrorHere:", e.getMessage());
+                Toast.makeText(this, "Error in here" + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
 //            image.setImageURI(imageUri);
 
@@ -120,61 +129,54 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show();
         }
     }
+
+
     public void classifyImage(Bitmap image){
+        int batchSize = 1;
+        int inputSize = 224;
+        int numChannels = 3;
+
+
+        Interpreter tflite;
         try {
-            SoilNet model1 = SoilNet.newInstance(getApplicationContext());
-
-
-            // Creates inputs for reference.
-            TensorBuffer inputFeature01 = TensorBuffer.createFixedSize(new int[]{1, 244, 244, 3}, DataType.FLOAT32);
-            ByteBuffer byteBuffer1 = ByteBuffer.allocateDirect(4 * 244 * 244 * 3);
-            byteBuffer1.order(ByteOrder.nativeOrder());
-
-            int[] intValues1 = new int[244 * 244];
-            image.getPixels(intValues1, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
-            int pixel1 = 0;
-            //iterate over each pixel and extract R, G, and B values. Add those values individually to the byte buffer.
-            for(int i = 0; i < 244; i ++){
-                for(int j = 0; j < 244; j++){
-                    int val = intValues1[pixel1++]; // RGB
-                    byteBuffer1.putFloat(((val >> 16) & 0xFF) * (1.f / 1));
-                    byteBuffer1.putFloat(((val >> 8) & 0xFF) * (1.f / 1));
-                    byteBuffer1.putFloat((val & 0xFF) * (1.f / 1));
+            tflite = new Interpreter(loadModelFile("SoilModelV2.tflite"));
+            Bitmap resizedImage = Bitmap.createScaledBitmap(image, 244, 244, true);
+            float[][][][] inputBuffer = new float[1][224][224][3];
+            for (int y = 0; y < 224; y++) {
+                for (int x = 0; x < 224; x++) {
+                    int pixel = resizedImage.getPixel(x, y);
+                    inputBuffer[0][y][x][0] = ((Color.red(pixel) - 127.5f) / 127.5f);
+                    inputBuffer[0][y][x][1] = ((Color.green(pixel) - 127.5f) / 127.5f);
+                    inputBuffer[0][y][x][2] = ((Color.blue(pixel) - 127.5f) / 127.5f);
                 }
             }
+            float[][] outputBuffer = new float[1][5]; // Assuming 5 classes in the output
+            tflite.run(inputBuffer, outputBuffer);
+            float[] predictions = outputBuffer[0];
 
-            inputFeature01.loadBuffer(byteBuffer1);
+// Find the index of the maximum prediction (argmax)
+            int predictedClassIndex = 0;
+            float maxPrediction = predictions[0];
 
-            // Runs model inference and gets result.
-            SoilNet.Outputs outputs1 = model1.process(inputFeature01);
-            TensorBuffer outputFeature01 = outputs1.getOutputFeature0AsTensorBuffer();
-
-            float[] confidences1 = outputFeature01.getFloatArray();
-            Toast.makeText(this, "Confidence "+ Arrays.toString(confidences1) , Toast.LENGTH_SHORT).show();
-            // find the index of the class with the biggest confidence.
-            int maxPos1 = 0;
-            float maxConfidence1 = 0;
-            Log.d("Confidionce", String.valueOf(confidences1.length));
-            for (int i = 0; i < confidences1.length; i++) {
-                Log.d("Confidionce", String.valueOf(Math.round(confidences1[i])));
-                if (confidences1[i] > maxConfidence1) {
-                    maxConfidence1 = confidences1[i];
-                    maxPos1 = i;
+            for (int i = 1; i < predictions.length; i++) {
+                if (predictions[i] > maxPrediction) {
+                    maxPrediction = predictions[i];
+                    predictedClassIndex = i;
                 }
             }
-            String[] res = new String[]{"0: Alluvial Soil:-{ Rice,Wheat,Sugarcane,Maize,Cotton,Soyabean,Jute }",
-                    "1: Black Soil:-{ Virginia, Wheat , Jowar,Millets,Linseed,Castor,Sunflower} ",
-                    "2: Clay Soil:-{ Rice,Lettuce,Chard,Broccoli,Cabbage,Snap Beans }",
-                    "3: Red Soil:{ Cotton,Wheat,Pilses,Millets,OilSeeds,Potatoes }"};
-            Intent i = new Intent(MainActivity.this, ImageAnalysis.class);
-            i.putExtra("imageUri",imageUri);
-            i.putExtra("Type",maxPos1);
-            startActivity(i);
-            model1.close();
+            Log.d("Class:", String.valueOf(predictedClassIndex));
         } catch (IOException e) {
-            Log.d("Confidionce", e.getMessage());
-            // TODO Handle the exception
+            Log.d("Error in Classify: ", e.getMessage());
         }
 
     }
+    private MappedByteBuffer loadModelFile(String modelPath) throws IOException {
+        AssetFileDescriptor fileDescriptor = getAssets().openFd(modelPath);
+        FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
+        FileChannel fileChannel = inputStream.getChannel();
+        long startOffset = fileDescriptor.getStartOffset();
+        long declaredLength = fileDescriptor.getDeclaredLength();
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
+    }
+
 }

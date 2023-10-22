@@ -21,7 +21,7 @@
         android:id="@+id/report_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="eTaka Soil Health Report"
+        android:text="Soil Health Report"
         android:textSize="24sp"
         android:textStyle="bold"
         android:padding="16dp"

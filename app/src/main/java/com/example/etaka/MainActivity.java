@@ -4,6 +4,7 @@ import static android.Manifest.permission.CAMERA;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
@@ -12,6 +13,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -21,8 +23,10 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -30,10 +34,17 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.etaka.ml.SoilModelV2;
 import com.github.dhaval2404.imagepicker.ImagePicker;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
@@ -59,14 +70,25 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int REQUEST_CODE = 200;
     private CardView iaCardView;
     private CardView lbaCardView;
     private CardView schemes;
-    int imageSize = 224;
     private Uri imageUri;
-    private Interpreter interpreter;
+    private static final String API_KEY = "487e8f74b6ee11d5f226d66638395de0";
+    private static final String API_URL = "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=" + API_KEY;
+    ;
+    private TextView temperatureTextView;
+    private TextView windTextView;
+    private TextView descriptionTextView;
+    private TextView humidityTextView;
+    private AlertDialog alertDialog;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LatLng latLng = null;
+    private LocationCallback locationCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,15 +96,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
+        temperatureTextView = findViewById(R.id.temperatureTextView);
+        windTextView = findViewById(R.id.windTextView);
+        descriptionTextView = findViewById(R.id.descriptionTextView);
+        humidityTextView = findViewById(R.id.humidityTextView);
+        alertDialog = new AlertDialog.Builder(this)
+                .setMessage("Loading...")
+                .setCancelable(false)
+                .create();
+        loadWeather();
         iaCardView = findViewById(R.id.ia);
         lbaCardView = findViewById(R.id.lba);
         schemes = findViewById(R.id.schemes);
         iaCardView.setOnClickListener(v -> {
             if (checkPermission()) {
                 ImagePicker.with(MainActivity.this)
-                        .crop(1f,1f)	    			//Crop image(Optional), Check Customization for more option
-                        .compress(1024)			//Final image size will be less than 1 MB(Optional)
-                        .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
+                        .crop(1f, 1f)                    //Crop image(Optional), Check Customization for more option
+                        .compress(1024)            //Final image size will be less than 1 MB(Optional)
+                        .maxResultSize(1080, 1080)    //Final image resolution will be less than 1080 x 1080(Optional)
                         .start();
             } else {
                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{CAMERA}, 1);
@@ -98,6 +129,100 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
+
+    private void loadWeather() {
+        alertDialog.show();
+        getLatLang();
+    }
+
+    private void makeApiCall(LatLng latLng) {
+        String apiUrl = String.format(API_URL, latLng.latitude, latLng.longitude);
+        new ApiCallTask().execute(apiUrl);
+        alertDialog.dismiss();
+    }
+    private static class ApiCallTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            if (params.length == 0) {
+                return null;
+            }
+
+            String apiUrl = params[0];
+
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url(apiUrl)
+                    .build();
+
+            try {
+                Response response = client.newCall(request).execute();
+                ResponseBody responseBody = response.body();
+                if (responseBody != null) {
+                    return responseBody.string();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.d("Server Response: ", result);
+
+        }
+    }
+    public void getLatLang() {
+        if (checkLocationPermission()) {
+            requestLocationUpdates();
+        } else {
+            requestLocationPermission();
+        }
+
+    }
+
+    private boolean checkLocationPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestLocationPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+    }
+
+    private void requestLocationUpdates() {
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        LocationRequest locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(10000)  // Update interval in milliseconds
+                .setFastestInterval(5000);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                if (locationResult.getLastLocation() != null) {
+                    Location location = locationResult.getLastLocation();
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+                    makeApiCall(new LatLng(latitude, longitude));
+                    stopLocationUpdates();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Something Went Wrong", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+    }
+
+    private void stopLocationUpdates() {
+        if (locationCallback != null) {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        }
+    }
+
     public boolean checkPermission() {
         int permission1 = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA);
         return permission1 == PackageManager.PERMISSION_GRANTED ;
@@ -106,10 +231,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
+        if (requestCode == REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return;
+                    requestLocationUpdates();
                 }
             } else {
                 Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
@@ -123,7 +248,6 @@ public class MainActivity extends AppCompatActivity {
 
             imageUri = data.getData();
             try {
-                Bitmap imageBitmap = (Bitmap) MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
                 String path = getPath(getApplicationContext(), imageUri);
                 classifyImage(imageUri, path);
             }

@@ -3,4 +3,6 @@
     <string name="place_api_key">AIzaSyDWh2tZNTZKRJQQIs6pqspqEiX7f8mxl08</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="api_key">487e8f74b6ee11d5f226d66638395de0</string>
+    <string name="api_url">https://api.openweathermap.org/data/2.5/weather</string>
 </resources>

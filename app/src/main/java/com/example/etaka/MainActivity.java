@@ -12,14 +12,21 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -33,14 +40,25 @@ import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     private CardView iaCardView;
@@ -81,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     public boolean checkPermission() {
-        // checking of permissions.
         int permission1 = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA);
         return permission1 == PackageManager.PERMISSION_GRANTED ;
     }
@@ -95,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
             } else {
-// Location permission denied, show an error message
                 Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
             }
         }
@@ -108,20 +124,15 @@ public class MainActivity extends AppCompatActivity {
             imageUri = data.getData();
             try {
                 Bitmap imageBitmap = (Bitmap) MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-
-                imageBitmap = Bitmap.createScaledBitmap(imageBitmap,imageSize,imageSize,true);
-                classifyImage(imageBitmap);
+                String path = getPath(getApplicationContext(), imageUri);
+                classifyImage(imageUri, path);
             }
             catch (Exception e)
             {
                 Log.d("ErrorHere:", e.getMessage());
                 Toast.makeText(this, "Error in here" + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
-//            image.setImageURI(imageUri);
 
-//            lottieAnimationView.setVisibility(View.GONE);
-//            image.getLayoutParams().height = image.getWidth();
-//            image.requestLayout();
 
         } else if (resultCode == ImagePicker.RESULT_ERROR) {
             Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
@@ -130,53 +141,146 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private String getPath(Context context, Uri uri) {
+        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
-    public void classifyImage(Bitmap image){
-        int batchSize = 1;
-        int inputSize = 224;
-        int numChannels = 3;
+        // DocumentProvider
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            // ExternalStorageProvider
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
 
-
-        Interpreter tflite;
-        try {
-            tflite = new Interpreter(loadModelFile("SoilModelV2.tflite"));
-            Bitmap resizedImage = Bitmap.createScaledBitmap(image, 244, 244, true);
-            float[][][][] inputBuffer = new float[1][224][224][3];
-            for (int y = 0; y < 224; y++) {
-                for (int x = 0; x < 224; x++) {
-                    int pixel = resizedImage.getPixel(x, y);
-                    inputBuffer[0][y][x][0] = ((Color.red(pixel) - 127.5f) / 127.5f);
-                    inputBuffer[0][y][x][1] = ((Color.green(pixel) - 127.5f) / 127.5f);
-                    inputBuffer[0][y][x][2] = ((Color.blue(pixel) - 127.5f) / 127.5f);
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
                 }
+
+                // TODO handle non-primary volumes
             }
-            float[][] outputBuffer = new float[1][5]; // Assuming 5 classes in the output
-            tflite.run(inputBuffer, outputBuffer);
-            float[] predictions = outputBuffer[0];
+            // DownloadsProvider
+            else if (isDownloadsDocument(uri)) {
 
-// Find the index of the maximum prediction (argmax)
-            int predictedClassIndex = 0;
-            float maxPrediction = predictions[0];
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
 
-            for (int i = 1; i < predictions.length; i++) {
-                if (predictions[i] > maxPrediction) {
-                    maxPrediction = predictions[i];
-                    predictedClassIndex = i;
+                return getDataColumn(context, contentUri, null, null);
+            }
+            // MediaProvider
+            else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                 }
+
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[] {
+                        split[1]
+                };
+
+                return getDataColumn(context, contentUri, selection, selectionArgs);
             }
-            Log.d("Class:", String.valueOf(predictedClassIndex));
-        } catch (IOException e) {
-            Log.d("Error in Classify: ", e.getMessage());
+        }
+        // MediaStore (and general)
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            return getDataColumn(context, uri, null, null);
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
         }
 
+        return null;
     }
-    private MappedByteBuffer loadModelFile(String modelPath) throws IOException {
-        AssetFileDescriptor fileDescriptor = getAssets().openFd(modelPath);
-        FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
-        FileChannel fileChannel = inputStream.getChannel();
-        long startOffset = fileDescriptor.getStartOffset();
-        long declaredLength = fileDescriptor.getDeclaredLength();
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
+    public static String getDataColumn(Context context, Uri uri, String selection,
+                                       String[] selectionArgs) {
+
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {
+                column
+        };
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int column_index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(column_index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
     }
 
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    public void classifyImage(Uri image, String selectedImagePath){
+        String postUrl = "http://192.168.117.148:5000/imageAnalysis";
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        Bitmap bitmap = BitmapFactory.decodeFile(selectedImagePath, options);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+
+        RequestBody postBodyImage = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("image", "androidFlask.jpg", RequestBody.create(MediaType.parse("image/*jpg"), byteArray))
+                .build();
+
+
+        postRequest(postUrl, postBodyImage);
+    }
+
+    private void postRequest(String postUrl, RequestBody postBodyImage) {
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(postUrl)
+                .post(postBodyImage)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                call.cancel();
+                Log.d("FAIL", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                try {
+                    if(response.isSuccessful()){
+                        Log.d("ServerResponse","Server's Response\n" + response.body().string());
+                    }else{
+                        Log.d("ServerResponse","Server's Response\n" + response.body().string());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 }

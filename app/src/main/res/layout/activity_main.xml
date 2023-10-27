@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/teal_700">
+    android:background="@color/farmgreen">
     <include
         android:id="@+id/toolbar"
         layout="@layout/app_bar"/>
@@ -26,6 +26,7 @@
                 android:padding="8dp"
                 android:background="@drawable/bg_weather1">
                 <ImageView
+                    android:id="@+id/tempIV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
@@ -35,11 +36,23 @@
                     android:id="@+id/temperatureTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="27.6°\nTemperature"
+                    android:text="27.6°"
+                    android:layout_toEndOf="@+id/tempIV"
                     android:textColor="@color/white"
                     android:layout_alignParentEnd="true"
                     android:layout_marginStart="4dp"
                     android:textSize="20sp"/>
+                <TextView
+                    android:id="@+id/temperatureLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Temperature"
+                    android:layout_toEndOf="@+id/tempIV"
+                    android:textColor="@color/white"
+                    android:layout_alignParentEnd="true"
+                    android:layout_below="@+id/temperatureTextView"
+                    android:layout_marginStart="4dp"
+                    android:textSize="14sp"/>
 
             </RelativeLayout>
             <RelativeLayout
@@ -54,11 +67,23 @@
                     android:id="@+id/windTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="27.6°\nWind"
+                    android:text="27.6°"
                     android:layout_alignParentStart="true"
                     android:textColor="@color/white"
+                    android:layout_toStartOf="@+id/windIV"
                     android:textSize="20sp"/>
+                <TextView
+                    android:id="@+id/windLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wind"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/windTextView"
+                    android:textColor="@color/white"
+                    android:layout_toStartOf="@+id/windIV"
+                    android:textSize="14sp"/>
                 <ImageView
+                    android:id="@+id/windIV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
@@ -83,11 +108,23 @@
                     android:id="@+id/descriptionTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="27.6°\nDescription"
+                    android:text="27.6°"
+                    android:layout_toEndOf="@+id/weather_des"
                     android:layout_alignParentEnd="true"
                     android:layout_marginStart="4dp"
                     android:textColor="@color/white"
                     android:textSize="20sp"/>
+                <TextView
+                    android:id="@+id/descriptionlLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Description"
+                    android:layout_toEndOf="@+id/weather_des"
+                    android:layout_alignParentEnd="true"
+                    android:layout_below="@+id/descriptionTextView"
+                    android:layout_marginStart="4dp"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"/>
 
             </RelativeLayout>
             <RelativeLayout
@@ -102,12 +139,25 @@
                     android:id="@+id/humidityTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="27.6°\nHumidity"
+                    android:text="27.6°"
                     android:textColor="@color/white"
                     android:drawablePadding="3dp"
                     android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/humidityIV"
                     android:textSize="20sp"/>
+                <TextView
+                    android:id="@+id/humidityLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Humidity"
+                    android:textColor="@color/white"
+                    android:drawablePadding="3dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/humidityTextView"
+                    android:layout_toStartOf="@+id/humidityIV"
+                    android:textSize="14sp"/>
                 <ImageView
+                    android:id="@+id/humidityIV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"

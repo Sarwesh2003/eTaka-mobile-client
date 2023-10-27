@@ -46,6 +46,9 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.image.TensorImage;
@@ -96,11 +99,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
-        temperatureTextView = findViewById(R.id.temperatureTextView);
-        windTextView = findViewById(R.id.windTextView);
-        descriptionTextView = findViewById(R.id.descriptionTextView);
-        humidityTextView = findViewById(R.id.humidityTextView);
         alertDialog = new AlertDialog.Builder(this)
+                .setTitle("Please Wait")
                 .setMessage("Loading...")
                 .setCancelable(false)
                 .create();
@@ -128,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, SchemesDetails.class);
             startActivity(intent);
         });
+
     }
 
     private void loadWeather() {
@@ -140,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         new ApiCallTask().execute(apiUrl);
         alertDialog.dismiss();
     }
-    private static class ApiCallTask extends AsyncTask<String, Void, String> {
+    private class ApiCallTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
             if (params.length == 0) {
@@ -168,7 +169,43 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            Log.d("Server Response: ", result);
+            if (result != null) {
+                try {
+                    JSONObject jsonResponse = new JSONObject(result);
+
+                    // Parse temperature from the "main" object
+                    JSONObject mainObject = jsonResponse.getJSONObject("main");
+                    double temperature = mainObject.getDouble("temp");
+                    int temperatureCelsius = (int) (temperature - 273.15);
+                    // Assuming you have a TextView with ID "temperatureTextView"
+                    TextView temperatureTextView = findViewById(R.id.temperatureTextView);
+                    temperatureTextView.setText(temperatureCelsius + "°C");
+
+                    // Parse description from the first item in the "weather" array
+                    JSONArray weatherArray = jsonResponse.getJSONArray("weather");
+                    JSONObject weatherObject = weatherArray.getJSONObject(0);
+                    String description = weatherObject.getString("description");
+                    // Assuming you have a TextView with ID "descriptionTextView"
+                    TextView descriptionTextView = findViewById(R.id.descriptionTextView);
+                    descriptionTextView.setText(description);
+
+                    // Parse wind speed and humidity from the "wind" and "main" objects
+                    JSONObject windObject = jsonResponse.getJSONObject("wind");
+                    double windSpeed = windObject.getDouble("speed");
+                    // Assuming you have a TextView with ID "windTextView"
+                    TextView windTextView = findViewById(R.id.windTextView);
+                    windTextView.setText(windSpeed + " m/s");
+
+                    int humidity = mainObject.getInt("humidity");
+                    // Assuming you have a TextView with ID "humidityTextView"
+                    TextView humidityTextView = findViewById(R.id.humidityTextView);
+                    humidityTextView.setText(humidity + "%");
+                } catch (JSONException e) {
+                    Toast.makeText(getApplicationContext(), "Something Went Wrong", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Log.e("Error", "Failed to retrieve data from the server.");
+            }
 
         }
     }

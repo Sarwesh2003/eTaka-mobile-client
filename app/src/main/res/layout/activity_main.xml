@@ -170,7 +170,8 @@
         android:layout_height="match_parent"
         android:background="@drawable/bg_card"
         android:layout_marginTop="8dp"
-        android:layout_below="@+id/weather">
+        android:layout_below="@+id/weather"
+        android:layout_above="@+id/bottom_navigation">
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -292,6 +293,7 @@
 
                 <!-- Option 4 -->
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/forums"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:layout_gravity="fill"
@@ -326,5 +328,15 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
             </GridLayout>
+
     </RelativeLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/farmgreen"
+        app:itemTextColor="@color/white"
+        app:itemIconTint="@color/white"
+        app:menu="@menu/bottom_navigation_menu" />
 </RelativeLayout>

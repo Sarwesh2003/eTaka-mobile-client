@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     private CardView iaCardView;
     private CardView lbaCardView;
     private CardView schemes;
+    private CardView forums;
     private Uri imageUri;
     private static final String API_KEY = "487e8f74b6ee11d5f226d66638395de0";
     private static final String API_URL = "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=" + API_KEY;
@@ -108,6 +109,8 @@ public class MainActivity extends AppCompatActivity {
         iaCardView = findViewById(R.id.ia);
         lbaCardView = findViewById(R.id.lba);
         schemes = findViewById(R.id.schemes);
+        forums = findViewById(R.id.forums);
+
         iaCardView.setOnClickListener(v -> {
             if (checkPermission()) {
                 ImagePicker.with(MainActivity.this)
@@ -125,6 +128,10 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
         schemes.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SchemesDetails.class);
+            startActivity(intent);
+        });
+        forums.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SchemesDetails.class);
             startActivity(intent);
         });
